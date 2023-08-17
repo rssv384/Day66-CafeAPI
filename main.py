@@ -41,6 +41,7 @@ class Cafe(db.Model):
 def home():
     return render_template('index.html')
 
+
 # HTTP GET - Read Record
 
 
@@ -74,20 +75,20 @@ def get_cafe_at_location():
 @app.route('/add', methods=['POST'])
 def post_new_cafe():
     new_cafe = Cafe(
-        id=request.form.get('id'),
         name=request.form.get('name'),
         map_url=request.form.get('map_url'),
         img_url=request.form.get('img_url'),
-        location=request.form.get('location'),
+        location=request.form.get('loc'),
         seats=request.form.get('seats'),
         has_toilet=bool(request.form.get('has_toilet')),
-        has_wifi=bool(request.form.get('')),
-        has_sockets=bool(request.form.get('')),
-        can_take_calls=bool(request.form.get('')),
-        coffee_price=request.form.get('')
+        has_wifi=bool(request.form.get('has_wifi')),
+        has_sockets=bool(request.form.get('has_sockets')),
+        can_take_calls=bool(request.form.get('calls')),
+        coffee_price=request.form.get('coffee_price')
     )
     db.session.add(new_cafe)
     db.session.commit()
+    return jsonify(response={'success': 'Successfully added the new cafe.'})
 
 
 # HTTP PUT/PATCH - Update Record
