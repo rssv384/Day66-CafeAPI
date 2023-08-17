@@ -10,6 +10,10 @@ db = SQLAlchemy()
 db.init_app(app)
 
 
+# API Key for HTTP DELETE authentication
+SECRET_API_KEY = 'TopSecretApiKey'
+
+
 # Cafe TABLE Configuration
 class Cafe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -43,8 +47,6 @@ def home():
 
 
 # HTTP GET - Read Record
-
-
 @app.route('/random')
 def get_random_cafe():
     random_cafe = db.session.scalars(
@@ -92,8 +94,30 @@ def post_new_cafe():
 
 
 # HTTP PUT/PATCH - Update Record
+@app.route('/update_price/<int:cafe_id>', methods=['PATCH'])
+def update_coffee_price(cafe_id: int):
+    cafe_to_update = db.session.get(Cafe, cafe_id)
+    if cafe_to_update:
+        cafe_to_update.coffee_price = request.args.get('new_price')
+        db.session.commit()
+        return jsonify(response={'success': 'Successfully updated the price.'}), 200
+    else:
+        return jsonify(error={'Not Found': f'Sorry, no cafe with id={cafe_id} was found in the database.'}), 400
+
 
 # HTTP DELETE - Delete Record
+@app.route('/report_closed/<int:cafe_id>', methods=['DELETE'])
+def delete_cafe(cafe_id: int):
+    if SECRET_API_KEY == request.args.get('api_key'):
+        cafe_to_delete = db.session.get(Cafe, cafe_id)
+        if cafe_to_delete:
+            db.session.delete(cafe_to_delete)
+            db.session.commit()
+            return jsonify(response={'success': 'Successfully deleted the cafe.'}), 200
+        else:
+            return jsonify(error={'Not Found': f'Sorry, no cafe with id={cafe_id} was found in the database.'}), 404
+    else:
+        return jsonify(error={'Forbidden': 'Sorry, you are not allowed to perform this operation. Make sure you have the correct api_key.'})
 
 
 if __name__ == '__main__':
